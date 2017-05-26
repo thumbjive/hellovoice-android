@@ -73,6 +73,8 @@ public class MainActivity extends Activity implements
 
     private String currentSearch = KWS_SEARCH;
 
+    private String currentState;
+
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -158,10 +160,7 @@ public class MainActivity extends Activity implements
 
         String text = hypothesis.getHypstr();
         Log.i("TJ", "hypothesis: " + text);
-//        if (text.equals(KEYPHRASE))
-//            switchSearch(COMMANDS_SEARCH);
-//        else
-            ((TextView) findViewById(R.id.result_text)).setText(text);
+        ((TextView) findViewById(R.id.result_text)).setText(text);
     }
 
     /**
@@ -176,9 +175,16 @@ public class MainActivity extends Activity implements
             makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
             if (text.equals(KEYPHRASE)) {
                 switchSearch(COMMANDS_SEARCH);
+                switchState("ready");
             }
             if ("exit".equals(text) || "quit".equals(text) || "cancel".equals(text)) {
                 switchSearch(KWS_SEARCH);
+            }
+            if ("play".equals(text)) {
+                switchState("playing");
+            }
+            if ("stop".equals(text)) {
+                switchState("stopped");
             }
         }
     }
@@ -194,30 +200,26 @@ public class MainActivity extends Activity implements
     public void onEndOfSpeech() {
         Log.i("TJ", "onEndOfSpeech");
         restartRecognizer();
-//        if (!recognizer.getSearchName().equals(KWS_SEARCH))
-//            switchSearch(KWS_SEARCH);
-//        if (recognizer.getSearchName().equals("stop") ||
-//                recognizer.getSearchName().equals("cancel"))
-//            switchSearch(KWS_SEARCH);
-//        else
+    }
 
-//            switchSearch(COMMANDS_SEARCH);
+    private void switchState(String newState) {
+        currentState = newState;
+        ((TextView) findViewById(R.id.state_text)).setText(currentState);
+
     }
 
     private void switchSearch(String searchName) {
         Log.i("TJ", "switchSearch: " + searchName);
-//        recognizer.stop();
-//
-//        // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
-//        if (searchName.equals(KWS_SEARCH))
-//            recognizer.startListening(searchName);
-//        else
-//            recognizer.startListening(searchName, 30000);
+        currentSearch = searchName;
 
-        String caption = getResources().getString(captions.get(searchName));
+        String caption = getResources().getString(captions.get(currentSearch));
         ((TextView) findViewById(R.id.caption_text)).setText(caption);
 
-        currentSearch = searchName;
+        if (currentSearch.equals(KWS_SEARCH))
+            switchState("");
+        else
+            switchState("ready");
+
         restartRecognizer();
     }
 
@@ -245,32 +247,12 @@ public class MainActivity extends Activity implements
                 .getRecognizer();
         recognizer.addListener(this);
 
-        /** In your application you might not need to add all those searches.
-         * They are added here for demonstration. You can leave just one.
-         */
-
         // Create keyword-activation search.
         recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
-
-//        // Create grammar-based search for selection between demos
-//        File menuGrammar = new File(assetsDir, "menu.gram");
-//        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
 
         // Hello Voice POC commands
         File commandsGrammar = new File(assetsDir, "commands.gram");
         recognizer.addGrammarSearch(COMMANDS_SEARCH, commandsGrammar);
-
-//        // Create grammar-based search for digit recognition
-//        File digitsGrammar = new File(assetsDir, "digits.gram");
-//        recognizer.addGrammarSearch(DIGITS_SEARCH, digitsGrammar);
-//
-//        // Create language model search
-//        File languageModel = new File(assetsDir, "weather.dmp");
-//        recognizer.addNgramSearch(FORECAST_SEARCH, languageModel);
-//
-//        // Phonetic search
-//        File phoneticModel = new File(assetsDir, "en-phone.dmp");
-//        recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
     }
 
     @Override

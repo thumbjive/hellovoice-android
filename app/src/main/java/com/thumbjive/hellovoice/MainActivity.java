@@ -60,10 +60,6 @@ public class MainActivity extends Activity implements
     /* Named searches allow to quickly reconfigure the decoder */
     private static final String KWS_SEARCH = "wakeup";
     private static final String COMMANDS_SEARCH = "commands";
-    private static final String FORECAST_SEARCH = "forecast";
-    private static final String DIGITS_SEARCH = "digits";
-    private static final String PHONE_SEARCH = "phones";
-    private static final String MENU_SEARCH = "commands";
 
     /* Keyword we are looking for to activate menu */
 //    private static final String KEYPHRASE = "oh mighty computer";
@@ -75,6 +71,8 @@ public class MainActivity extends Activity implements
     private SpeechRecognizer recognizer;
     private HashMap<String, Integer> captions;
 
+    private String currentSearch = KWS_SEARCH;
+
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -82,9 +80,6 @@ public class MainActivity extends Activity implements
         // Prepare the data for UI
         captions = new HashMap<String, Integer>();
         captions.put(KWS_SEARCH, R.string.kws_caption);
-        captions.put(MENU_SEARCH, R.string.menu_caption);
-        captions.put(DIGITS_SEARCH, R.string.digits_caption);
-        captions.put(PHONE_SEARCH, R.string.phone_caption);
         captions.put(COMMANDS_SEARCH, R.string.commands_caption);
         setContentView(R.layout.main);
         ((TextView) findViewById(R.id.caption_text))
@@ -162,18 +157,10 @@ public class MainActivity extends Activity implements
             return;
 
         String text = hypothesis.getHypstr();
-        Log.w("hypothesis", text);
-        if (text.equals(KEYPHRASE))
-            switchSearch(MENU_SEARCH);
-        else if (text.equals(COMMANDS_SEARCH))
-            switchSearch(COMMANDS_SEARCH);
-        else if (text.equals(DIGITS_SEARCH))
-            switchSearch(DIGITS_SEARCH);
-        else if (text.equals(PHONE_SEARCH))
-            switchSearch(PHONE_SEARCH);
-        else if (text.equals(FORECAST_SEARCH))
-            switchSearch(FORECAST_SEARCH);
-        else
+        Log.i("TJ", "hypothesis: " + text);
+//        if (text.equals(KEYPHRASE))
+//            switchSearch(COMMANDS_SEARCH);
+//        else
             ((TextView) findViewById(R.id.result_text)).setText(text);
     }
 
@@ -185,8 +172,11 @@ public class MainActivity extends Activity implements
         ((TextView) findViewById(R.id.result_text)).setText("");
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
-            Log.w("onResult", text);
+            Log.i("TJ", "onResult: " + text);
             makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            if (text.equals(KEYPHRASE)) {
+                switchSearch(COMMANDS_SEARCH);
+            }
             if ("exit".equals(text) || "quit".equals(text) || "cancel".equals(text)) {
                 switchSearch(KWS_SEARCH);
             }
@@ -202,28 +192,44 @@ public class MainActivity extends Activity implements
      */
     @Override
     public void onEndOfSpeech() {
-        Log.w("onEndOfSpeech", recognizer.getSearchName());
+        Log.i("TJ", "onEndOfSpeech");
+        restartRecognizer();
 //        if (!recognizer.getSearchName().equals(KWS_SEARCH))
 //            switchSearch(KWS_SEARCH);
 //        if (recognizer.getSearchName().equals("stop") ||
 //                recognizer.getSearchName().equals("cancel"))
 //            switchSearch(KWS_SEARCH);
 //        else
-            switchSearch(MENU_SEARCH);
+
+//            switchSearch(COMMANDS_SEARCH);
     }
 
     private void switchSearch(String searchName) {
-        Log.w("switchSearch", searchName);
-        recognizer.stop();
-
-        // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
-        if (searchName.equals(KWS_SEARCH))
-            recognizer.startListening(searchName);
-        else
-            recognizer.startListening(searchName, 30000);
+        Log.i("TJ", "switchSearch: " + searchName);
+//        recognizer.stop();
+//
+//        // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
+//        if (searchName.equals(KWS_SEARCH))
+//            recognizer.startListening(searchName);
+//        else
+//            recognizer.startListening(searchName, 30000);
 
         String caption = getResources().getString(captions.get(searchName));
         ((TextView) findViewById(R.id.caption_text)).setText(caption);
+
+        currentSearch = searchName;
+        restartRecognizer();
+    }
+
+    private void restartRecognizer() {
+        Log.i("TJ", "restartRecognizer, currentSearch: " + currentSearch);
+        recognizer.stop();
+
+        // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
+        if (currentSearch.equals(KWS_SEARCH))
+            recognizer.startListening(currentSearch);
+        else
+            recognizer.startListening(currentSearch, 30000);
     }
 
     private void setupRecognizer(File assetsDir) throws IOException {
@@ -246,25 +252,25 @@ public class MainActivity extends Activity implements
         // Create keyword-activation search.
         recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
 
-        // Create grammar-based search for selection between demos
-        File menuGrammar = new File(assetsDir, "menu.gram");
-        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
+//        // Create grammar-based search for selection between demos
+//        File menuGrammar = new File(assetsDir, "menu.gram");
+//        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
 
-        // BEOB POC commands
+        // Hello Voice POC commands
         File commandsGrammar = new File(assetsDir, "commands.gram");
         recognizer.addGrammarSearch(COMMANDS_SEARCH, commandsGrammar);
 
-        // Create grammar-based search for digit recognition
-        File digitsGrammar = new File(assetsDir, "digits.gram");
-        recognizer.addGrammarSearch(DIGITS_SEARCH, digitsGrammar);
-
-        // Create language model search
-        File languageModel = new File(assetsDir, "weather.dmp");
-        recognizer.addNgramSearch(FORECAST_SEARCH, languageModel);
-
-        // Phonetic search
-        File phoneticModel = new File(assetsDir, "en-phone.dmp");
-        recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
+//        // Create grammar-based search for digit recognition
+//        File digitsGrammar = new File(assetsDir, "digits.gram");
+//        recognizer.addGrammarSearch(DIGITS_SEARCH, digitsGrammar);
+//
+//        // Create language model search
+//        File languageModel = new File(assetsDir, "weather.dmp");
+//        recognizer.addNgramSearch(FORECAST_SEARCH, languageModel);
+//
+//        // Phonetic search
+//        File phoneticModel = new File(assetsDir, "en-phone.dmp");
+//        recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
     }
 
     @Override

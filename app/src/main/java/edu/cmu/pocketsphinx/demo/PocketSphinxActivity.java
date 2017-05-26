@@ -37,6 +37,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,13 +58,16 @@ public class PocketSphinxActivity extends Activity implements
 
     /* Named searches allow to quickly reconfigure the decoder */
     private static final String KWS_SEARCH = "wakeup";
+    private static final String COMMANDS_SEARCH = "commands";
     private static final String FORECAST_SEARCH = "forecast";
     private static final String DIGITS_SEARCH = "digits";
     private static final String PHONE_SEARCH = "phones";
-    private static final String MENU_SEARCH = "menu";
+    private static final String MENU_SEARCH = "commands";
 
     /* Keyword we are looking for to activate menu */
-    private static final String KEYPHRASE = "oh mighty computer";
+//    private static final String KEYPHRASE = "oh mighty computer";
+//    private static final String KEYPHRASE = "hello bee ee oh bee";
+    private static final String KEYPHRASE = "hello voice";
 
     /* Used to handle permission request */
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
@@ -81,7 +85,7 @@ public class PocketSphinxActivity extends Activity implements
         captions.put(MENU_SEARCH, R.string.menu_caption);
         captions.put(DIGITS_SEARCH, R.string.digits_caption);
         captions.put(PHONE_SEARCH, R.string.phone_caption);
-        captions.put(FORECAST_SEARCH, R.string.forecast_caption);
+        captions.put(COMMANDS_SEARCH, R.string.commands_caption);
         setContentView(R.layout.main);
         ((TextView) findViewById(R.id.caption_text))
                 .setText("Preparing the recognizer");
@@ -158,8 +162,11 @@ public class PocketSphinxActivity extends Activity implements
             return;
 
         String text = hypothesis.getHypstr();
+        Log.w("hypothesis", text);
         if (text.equals(KEYPHRASE))
             switchSearch(MENU_SEARCH);
+        else if (text.equals(COMMANDS_SEARCH))
+            switchSearch(COMMANDS_SEARCH);
         else if (text.equals(DIGITS_SEARCH))
             switchSearch(DIGITS_SEARCH);
         else if (text.equals(PHONE_SEARCH))
@@ -178,7 +185,11 @@ public class PocketSphinxActivity extends Activity implements
         ((TextView) findViewById(R.id.result_text)).setText("");
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
+            Log.w("onResult", text);
             makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            if ("stop".equals(text) || "cancel".equals(text)) {
+                switchSearch(KWS_SEARCH);
+            }
         }
     }
 
@@ -191,18 +202,25 @@ public class PocketSphinxActivity extends Activity implements
      */
     @Override
     public void onEndOfSpeech() {
-        if (!recognizer.getSearchName().equals(KWS_SEARCH))
-            switchSearch(KWS_SEARCH);
+        Log.w("onEndOfSpeech", recognizer.getSearchName());
+//        if (!recognizer.getSearchName().equals(KWS_SEARCH))
+//            switchSearch(KWS_SEARCH);
+//        if (recognizer.getSearchName().equals("stop") ||
+//                recognizer.getSearchName().equals("cancel"))
+//            switchSearch(KWS_SEARCH);
+//        else
+            switchSearch(MENU_SEARCH);
     }
 
     private void switchSearch(String searchName) {
+        Log.w("switchSearch", searchName);
         recognizer.stop();
 
         // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
         if (searchName.equals(KWS_SEARCH))
             recognizer.startListening(searchName);
         else
-            recognizer.startListening(searchName, 10000);
+            recognizer.startListening(searchName, 30000);
 
         String caption = getResources().getString(captions.get(searchName));
         ((TextView) findViewById(R.id.caption_text)).setText(caption);
@@ -231,6 +249,10 @@ public class PocketSphinxActivity extends Activity implements
         // Create grammar-based search for selection between demos
         File menuGrammar = new File(assetsDir, "menu.gram");
         recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
+
+        // BEOB POC commands
+        File commandsGrammar = new File(assetsDir, "commands.gram");
+        recognizer.addGrammarSearch(COMMANDS_SEARCH, commandsGrammar);
 
         // Create grammar-based search for digit recognition
         File digitsGrammar = new File(assetsDir, "digits.gram");

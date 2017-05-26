@@ -1,0 +1,28 @@
+#JSGF V1.0;
+
+grammar commands;
+
+<number> = oh   |
+          zero  |
+          one   |
+          two   |
+          three |
+          four  |
+          five  |
+          six   |
+          seven |
+          eight |
+          nine  |
+          ten   |
+          twenty |
+          thirty |
+          fourty |
+          fifty ;
+
+<numbers> = <numbers>+;
+
+<time> = <numbers> (seconds | minute | minutes);
+
+//public <test> = play | stop | faster | slower | cancel | help | forward <time> | back <time> ;
+
+public <item> = play | stop | faster | slower | cancel | help | forward | back ;

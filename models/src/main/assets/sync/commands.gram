@@ -1,28 +1,23 @@
 #JSGF V1.0;
 
-grammar commands;
+grammar com.thumbjive.commands;
 
-<number> = oh   |
-          zero  |
-          one   |
+<number> = one  |
           two   |
           three |
           four  |
           five  |
-          six   |
-          seven |
-          eight |
-          nine  |
           ten   |
+          fifteen |
           twenty |
-          thirty |
-          fourty |
-          fifty ;
+          thirty ;
 
-<numbers> = <numbers>+;
+//<numbers> = <number>+;
 
-<time> = <numbers> (seconds | minute | minutes);
+<time> = <number> (seconds | minute | minutes);
 
-//public <test> = play | stop | faster | slower | cancel | help | forward <time> | back <time> ;
+public <item> = play | stop | faster | slower | cancel | help | forward <time> | back <time> ;
 
-public <item> = play | stop | faster | slower | cancel | help | forward | back ;
+//public <item> = play | stop | faster | slower | cancel | help | forward | back ;
+
+//public <item> = forward <numbers> | stop ;

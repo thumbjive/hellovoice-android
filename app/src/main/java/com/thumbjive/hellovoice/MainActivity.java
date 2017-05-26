@@ -28,7 +28,7 @@
  * ====================================================================
  */
 
-package edu.cmu.pocketsphinx.demo;
+package com.thumbjive.hellovoice;
 
 import android.Manifest;
 import android.app.Activity;
@@ -50,10 +50,11 @@ import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.SpeechRecognizer;
 import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
+import com.thumbjive.hellovoice.R;
 
 import static android.widget.Toast.makeText;
 
-public class PocketSphinxActivity extends Activity implements
+public class MainActivity extends Activity implements
         RecognitionListener {
 
     /* Named searches allow to quickly reconfigure the decoder */
@@ -66,7 +67,6 @@ public class PocketSphinxActivity extends Activity implements
 
     /* Keyword we are looking for to activate menu */
 //    private static final String KEYPHRASE = "oh mighty computer";
-//    private static final String KEYPHRASE = "hello bee ee oh bee";
     private static final String KEYPHRASE = "hello voice";
 
     /* Used to handle permission request */
@@ -106,7 +106,7 @@ public class PocketSphinxActivity extends Activity implements
             @Override
             protected Exception doInBackground(Void... params) {
                 try {
-                    Assets assets = new Assets(PocketSphinxActivity.this);
+                    Assets assets = new Assets(MainActivity.this);
                     File assetDir = assets.syncAssets();
                     setupRecognizer(assetDir);
                 } catch (IOException e) {

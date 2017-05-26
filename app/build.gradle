@@ -1,15 +1,28 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'ThumbjiveAndroidKey'
+            storeFile file('/home/elliott/thumbjive/keystores/tj-android.jks')
+        }
+    }
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
-
     defaultConfig {
-        applicationId "edu.cmu.sphinx.pocketsphinx"
+        applicationId 'com.thumbjive.hellovoice'
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 2
         versionName "1.1"
+        signingConfig signingConfigs.config
+    }
+    productFlavors {
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.config
+        }
     }
 }
 

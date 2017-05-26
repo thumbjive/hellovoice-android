@@ -187,7 +187,7 @@ public class MainActivity extends Activity implements
             String text = hypothesis.getHypstr();
             Log.w("onResult", text);
             makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-            if ("stop".equals(text) || "cancel".equals(text)) {
+            if ("exit".equals(text) || "quit".equals(text) || "cancel".equals(text)) {
                 switchSearch(KWS_SEARCH);
             }
         }

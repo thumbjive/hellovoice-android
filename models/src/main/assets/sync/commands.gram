@@ -33,7 +33,7 @@ grammar com.thumbjive.hellovoice.commands;
 
 public <item> = play | stop |
                 faster | slower |
-                [go] forward <time> | [go] back <time> |
+                [go] forward <time> | go back <time> |
                 start session <digits> |
                 end session <digit> |
                 start feedback |

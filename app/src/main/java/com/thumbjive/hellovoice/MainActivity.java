@@ -172,19 +172,20 @@ public class MainActivity extends Activity implements
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
             Log.i("TJ", "onResult: " + text);
-            makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
             if (text.equals(KEYPHRASE)) {
                 switchSearch(COMMANDS_SEARCH);
-                switchState("ready");
+                switchState("ready", null);
             }
             if ("exit".equals(text) || "quit".equals(text) || "cancel".equals(text)) {
                 switchSearch(KWS_SEARCH);
-            }
-            if ("play".equals(text)) {
-                switchState("playing");
-            }
-            if ("stop".equals(text)) {
-                switchState("stopped");
+            } else if ("play".equals(text)) {
+                switchState("playing", "playing");
+            } else if ("stop".equals(text)) {
+                switchState("stopped", "stopped");
+            } else if (text.startsWith("go ")) {
+                handleGoCommand(text);
+            } else {
+                showToast(text);
             }
         }
     }
@@ -202,10 +203,57 @@ public class MainActivity extends Activity implements
         restartRecognizer();
     }
 
-    private void switchState(String newState) {
-        currentState = newState;
-        ((TextView) findViewById(R.id.state_text)).setText(currentState);
+    private void showToast(String text) {
+        if (text != null && text.length() > 0) {
+            makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+        }
+    }
 
+    private void handleGoCommand(String text) {
+        String[] words = text.split(" ");
+        int direction = words[1].equals("forward") ? 1 : -1;
+        int multiplier = words[words.length-1].startsWith("minute") ? 60 : 1;
+        int number = parseNumber(words[2]);
+        int secondsDelta = number * direction * multiplier;
+        String sign = secondsDelta > 0 ? "+" : "";
+        Log.i("TJ", "handleGoCommand " + text + " -> " + secondsDelta + " seconds");
+        showToast("navigating " + sign + secondsDelta + " seconds");
+    }
+
+    private int parseNumber(String word) {
+        switch (word) {
+            case "oh":
+            case "one":
+                return 1;
+            case "two":
+                return 2;
+            case "three":
+                return 3;
+            case "four":
+                return 4;
+            case "five":
+                return 5;
+            case "ten":
+                return 10;
+            case "fifteen":
+                return 15;
+            case "twenty":
+                return 20;
+            case "thirty":
+                return 30;
+            case "forty":
+                return 40;
+            case "fifty":
+                return 50;
+            default:
+                Log.w("TJ", "parseNumber failed: " + word);
+                return 0;
+        }
+    }
+
+    private void switchState(String newState, String toast) {
+        currentState = newState;
+        showToast(toast);
     }
 
     private void switchSearch(String searchName) {
@@ -216,9 +264,9 @@ public class MainActivity extends Activity implements
         ((TextView) findViewById(R.id.caption_text)).setText(caption);
 
         if (currentSearch.equals(KWS_SEARCH))
-            switchState("");
+            switchState("", null);
         else
-            switchState("ready");
+            switchState("ready", null);
 
         restartRecognizer();
     }

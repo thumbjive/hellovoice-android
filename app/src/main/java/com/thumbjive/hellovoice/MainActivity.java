@@ -73,7 +73,9 @@ public class MainActivity extends Activity implements
 
     private String currentSearch = KWS_SEARCH;
 
-    private String currentState;
+    private boolean playing;
+    private int percentageSpeed = 100;
+    private Integer activeSession = null;
 
     @Override
     public void onCreate(Bundle state) {
@@ -174,20 +176,25 @@ public class MainActivity extends Activity implements
             Log.i("TJ", "onResult: " + text);
             if (text.equals(KEYPHRASE)) {
                 switchSearch(COMMANDS_SEARCH);
-                switchState("ready", null);
+                resetState();
             }
             if ("exit".equals(text) || "quit".equals(text) || "cancel".equals(text)) {
                 switchSearch(KWS_SEARCH);
             } else if ("play".equals(text)) {
-                switchState("playing", "playing");
+                playing = true;
+                showToast("playing");
             } else if ("stop".equals(text)) {
-                switchState("stopped", "stopped");
+                playing = false;
+                showToast("stopping");
             } else if (text.startsWith("go ")) {
                 handleGoCommand(text);
+            } else if (text.equals("faster") || text.equals("slower")) {
+                handleSpeedCommand(text);
             } else {
                 showToast(text);
             }
         }
+        displayState();
     }
 
     @Override
@@ -207,6 +214,36 @@ public class MainActivity extends Activity implements
         if (text != null && text.length() > 0) {
             makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void resetState() {
+        playing = false;
+        percentageSpeed = 100;
+        activeSession = null;
+    }
+
+    private String stateString() {
+        if (playing) {
+            if (percentageSpeed == 100) {
+                return "playing at normal speed";
+            } else {
+                return "playing at " + percentageSpeed + "% speed";
+            }
+        } else {
+            return "stopped";
+        }
+    }
+
+    private void displayState() {
+        ((TextView) findViewById(R.id.state_text)).setText(stateString());
+    }
+
+    private void handleSpeedCommand(String text) {
+        int direction = text.equals("faster") ? 1 : -1;
+        percentageSpeed += direction * 25;
+        Log.i("TJ", "handleSpeedCommand " + text + " -> now: " + percentageSpeed + " percent");
+        String speedStatus = "Setting speed to: " + percentageSpeed + "%";
+        showToast(speedStatus);
     }
 
     private void handleGoCommand(String text) {
@@ -233,6 +270,14 @@ public class MainActivity extends Activity implements
                 return 4;
             case "five":
                 return 5;
+            case "six":
+                return 6;
+            case "seven":
+                return 7;
+            case "eight":
+                return 8;
+            case "nine":
+                return 9;
             case "ten":
                 return 10;
             case "fifteen":
@@ -251,11 +296,6 @@ public class MainActivity extends Activity implements
         }
     }
 
-    private void switchState(String newState, String toast) {
-        currentState = newState;
-        showToast(toast);
-    }
-
     private void switchSearch(String searchName) {
         Log.i("TJ", "switchSearch: " + searchName);
         currentSearch = searchName;
@@ -263,10 +303,9 @@ public class MainActivity extends Activity implements
         String caption = getResources().getString(captions.get(currentSearch));
         ((TextView) findViewById(R.id.caption_text)).setText(caption);
 
-        if (currentSearch.equals(KWS_SEARCH))
-            switchState("", null);
-        else
-            switchState("ready", null);
+        if (currentSearch.equals(COMMANDS_SEARCH)) {
+            resetState();
+        }
 
         restartRecognizer();
     }

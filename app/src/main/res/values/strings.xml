@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <string name="app_name">Thumbjive - Hello Voice (v0.0.3)</string>
+    <string name="app_name">Thumbjive - Hello Voice (v0.0.4)</string>
 
     <string name="kws_caption">To start say \"hello voice\".</string>
     <string name="commands_caption">Say: play, stop, faster, slower,\n   go forward [time],\n go back [time],\n   start session [numbers],\n   end session [number],\n   start feedback, end feedback,\n   help, cancel, exit</string>

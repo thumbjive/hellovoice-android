@@ -190,11 +190,9 @@ public class MainActivity extends Activity implements
                 showToast("resetting state");
                 resetState();
             } else if ("play".equals(text)) {
-                playing = true;
-                showToast("playing");
+                handlePlayCommand();
             } else if ("stop".equals(text)) {
-                playing = false;
-                showToast("stopping");
+                handleStopCommand();
             } else if (text.startsWith("go ")) {
                 handleGoCommand(text);
             } else if (text.equals("faster") || text.equals("slower")) {
@@ -232,9 +230,10 @@ public class MainActivity extends Activity implements
     }
 
     private void resetState() {
+        activeSession = null;
         playing = false;
         percentageSpeed = 100;
-        activeSession = null;
+        recordingFeedback = false;
     }
 
     private String stateString() {
@@ -253,19 +252,60 @@ public class MainActivity extends Activity implements
         }
     }
 
+    private String sessionString() {
+        if (currentSearch.equals(KWS_SEARCH)) {
+            return "";
+        } else if (activeSession != null) {
+            return "active session: " + activeSession;
+        } else {
+            return "session inactive";
+        }
+    }
+
     private void displayState() {
         ((TextView) findViewById(R.id.state_text)).setText(stateString());
+        ((TextView) findViewById(R.id.session_text)).setText(sessionString());
+    }
+
+    private void handlePlayCommand() {
+        if (recordingFeedback) {
+            showToast("recording feedback");
+            return;
+        }
+        playing = true;
+        showToast("playing");
+    }
+
+    private void handleStopCommand() {
+        if (recordingFeedback) {
+            showToast("recording feedback");
+            return;
+        }
+        playing = false;
+        showToast("stopped");
     }
 
     private void handleSpeedCommand(String text) {
-        int direction = text.equals("faster") ? 1 : -1;
-        percentageSpeed += direction * 25;
-        Log.i("TJ", "handleSpeedCommand " + text + " -> now: " + percentageSpeed + " percent");
-        String speedStatus = "Setting speed to: " + percentageSpeed + "%";
-        showToast(speedStatus);
+        if (recordingFeedback) {
+            showToast("recording feedback");
+            return;
+        }
+        if (playing) {
+            int direction = text.equals("faster") ? 1 : -1;
+            percentageSpeed += direction * 25;
+            Log.i("TJ", "handleSpeedCommand " + text + " -> now: " + percentageSpeed + " percent");
+            String speedStatus = "Setting speed to: " + percentageSpeed + "%";
+            showToast(speedStatus);
+        } else {
+            showToast("not playing");
+        }
     }
 
     private void handleGoCommand(String text) {
+        if (recordingFeedback) {
+            showToast("recording feedback");
+            return;
+        }
         String[] words = text.split(" ");
         int direction = words[1].equals("forward") ? 1 : -1;
         int multiplier = words[words.length-1].startsWith("minute") ? 60 : 1;
@@ -277,22 +317,34 @@ public class MainActivity extends Activity implements
     }
 
     private void handleSessionCommand(String text) {
+        if (recordingFeedback) {
+            showToast("recording feedback");
+            return;
+        }
         List<String> words = new ArrayList<>(Arrays.asList(text.split(" ")));
-        boolean started = words.remove(0).equals("start");
+        boolean starting = words.remove(0).equals("start");
         words.remove(0); // munch "sessions"
         int number = parseDigits(words);
-        if (started) {
-            activeSession = number;
-            showToast("starting session " + number);
+        if (starting) {
+            if (activeSession == null) {
+                activeSession = number;
+                showToast("starting session " + number);
+            } else {
+                showToast("session already active");
+            }
         } else {
-            activeSession = null;
-            showToast("session ended - feedback status: " + number);
+            if (activeSession != null) {
+                activeSession = null;
+                showToast("session ended - feedback status: " + number);
+            } else {
+                showToast("no active session");
+            }
         }
     }
 
     private void handleFeedbackCommand(String text) {
-        boolean started = text.startsWith("start");
-        if (started) {
+        boolean starting = text.startsWith("start");
+        if (starting) {
             if (recordingFeedback) {
                 showToast("already recording");
             } else {

@@ -79,6 +79,7 @@ public class MainActivity extends Activity implements
     private boolean playing;
     private int percentageSpeed = 100;
     private Integer activeSession = null;
+    private boolean recordingFeedback;
 
     @Override
     public void onCreate(Bundle state) {
@@ -181,8 +182,13 @@ public class MainActivity extends Activity implements
                 switchSearch(COMMANDS_SEARCH);
                 resetState();
             }
-            if ("exit".equals(text) || "quit".equals(text) || "cancel".equals(text)) {
+
+            if ("exit".equals(text) || "quit".equals(text)) {
+                showToast("exiting");
                 switchSearch(KWS_SEARCH);
+            } if ("cancel".equals(text)) {
+                showToast("resetting state");
+                resetState();
             } else if ("play".equals(text)) {
                 playing = true;
                 showToast("playing");
@@ -195,6 +201,10 @@ public class MainActivity extends Activity implements
                 handleSpeedCommand(text);
             } else if (text.contains("session")) {
                 handleSessionCommand(text);
+            } else if (text.contains("feedback")) {
+                handleFeedbackCommand(text);
+            } else  if (text.equals("help")) {
+                showToast("don't forget your towel");
             } else {
                 showToast(text);
             }
@@ -230,6 +240,8 @@ public class MainActivity extends Activity implements
     private String stateString() {
         if (currentSearch.equals(KWS_SEARCH)) {
             return "";
+        } else if (recordingFeedback) {
+            return "recording feedback";
         } else if (playing) {
             if (percentageSpeed == 100) {
                 return "playing at normal speed";
@@ -275,6 +287,25 @@ public class MainActivity extends Activity implements
         } else {
             activeSession = null;
             showToast("session ended - feedback status: " + number);
+        }
+    }
+
+    private void handleFeedbackCommand(String text) {
+        boolean started = text.startsWith("start");
+        if (started) {
+            if (recordingFeedback) {
+                showToast("already recording");
+            } else {
+                recordingFeedback = true;
+                showToast("starting recording");
+            }
+        } else {
+            if (recordingFeedback) {
+                showToast("finished recording");
+                recordingFeedback = false;
+            } else {
+                showToast("not recording");
+            }
         }
     }
 

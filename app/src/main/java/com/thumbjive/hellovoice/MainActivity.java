@@ -43,7 +43,10 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
@@ -190,6 +193,8 @@ public class MainActivity extends Activity implements
                 handleGoCommand(text);
             } else if (text.equals("faster") || text.equals("slower")) {
                 handleSpeedCommand(text);
+            } else if (text.contains("session")) {
+                handleSessionCommand(text);
             } else {
                 showToast(text);
             }
@@ -223,7 +228,9 @@ public class MainActivity extends Activity implements
     }
 
     private String stateString() {
-        if (playing) {
+        if (currentSearch.equals(KWS_SEARCH)) {
+            return "";
+        } else if (playing) {
             if (percentageSpeed == 100) {
                 return "playing at normal speed";
             } else {
@@ -255,6 +262,29 @@ public class MainActivity extends Activity implements
         String sign = secondsDelta > 0 ? "+" : "";
         Log.i("TJ", "handleGoCommand " + text + " -> " + secondsDelta + " seconds");
         showToast("navigating " + sign + secondsDelta + " seconds");
+    }
+
+    private void handleSessionCommand(String text) {
+        List<String> words = new ArrayList<>(Arrays.asList(text.split(" ")));
+        boolean started = words.remove(0).equals("start");
+        words.remove(0); // munch "sessions"
+        int number = parseDigits(words);
+        if (started) {
+            activeSession = number;
+            showToast("starting session " + number);
+        } else {
+            activeSession = null;
+            showToast("session ended - feedback status: " + number);
+        }
+    }
+
+    private int parseDigits(List<String> words) {
+        int result = 0;
+        for (String word : words) {
+            int number = parseNumber(word);
+            result = result * 10 + number;
+        }
+        return result;
     }
 
     private int parseNumber(String word) {
